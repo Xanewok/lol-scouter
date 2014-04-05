@@ -1,6 +1,10 @@
-#include <stdio.h>
+#include <cstdio>
+#include <set>
 #include <curl/curl.h>
 #include "cJSON/cJSON.h"
+#include "game.hpp"
+
+std::set<game> game_history;
 
 /* Temporary team holder */
 const int teams[16][5] ={{19381878, 19739336, 26154202, 29945492, 24423271},/* Random Five */
@@ -48,7 +52,7 @@ void init()
 int main(int argc, char* argv[])
 {
 	printf("This product is not endorsed, certified or otherwise approved in any way by Riot Games, Inc. or any of its affiliates.\n\n"); // we need to put this somewhere else
-	printf("Please input your API key: ");
+	printf("Please input your Riot API key: ");
 	char key[37];
 	scanf("%s", key);
 
@@ -65,10 +69,10 @@ int main(int argc, char* argv[])
 	if (curl) {
 		/* Tell libcurl to *not* verify the peer. With libcurl you disable this with */
 		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, FALSE);
-		//curl_easy_setopt(curl, CURLOPT_URL, "http://example.com");
-		curl_easy_setopt(curl, CURLOPT_URL, buf);
 
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_func);
+		
+		curl_easy_setopt(curl, CURLOPT_URL, buf);
 
 		/* Perform the request, res will get the return code */
 		res = curl_easy_perform(curl);
