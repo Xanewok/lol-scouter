@@ -4,13 +4,13 @@
 #ifndef GAME_HPP
 #define GAME_HPP
 
-/* 	Mirrors the Riot API game structure with the exception of moving the individual
-	player to fellow_players group (making the group having 10 members) */
+/* 	Mirrors the Riot API game structure */
 struct game {
 	char *internal_string;
-	int game_id;
+	long long int game_id, summoner_id;
 
 	game(char *buf, int size);
+	game(int game_id, int summoner_id);
 	bool operator<(const game &g) const;
 };
 

@@ -7,7 +7,7 @@ OUT_PATH=./bin
 all: clean scouter
 
 scouter: cJSON.o game.o scouter.o
-	$(CC) $(CFLAGS) scouter.o cJSON.o -o $(OUT_PATH)/scouter.exe $(LIBS) $(CLFLAGS)
+	$(CC) $(CFLAGS) scouter.o cJSON.o game.o -o $(OUT_PATH)/scouter.exe $(LIBS) $(CLFLAGS)
 
 scouter.o:
 	$(CC) $(CFLAGS) -c scouter.cpp
