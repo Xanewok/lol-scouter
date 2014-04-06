@@ -1,13 +1,14 @@
 #include <cstdio>
 #include <set>
 #include <curl/curl.h>
+#include <windows.h>
 #include "cJSON/cJSON.h"
 #include "game.hpp"
 
 #define NUM_TEAMS 16
 #define NUM_MEMBERS 5
 
-std::set<game> game_history;
+std::set<game *> game_history;
 
 /* Temporary team holder */
 const int teams[NUM_TEAMS][NUM_MEMBERS] =	{{19381878, 19739336, 26154202, 29945492, 24423271},/* Random Five */
@@ -35,6 +36,12 @@ struct MemoryStruct {
 	{
 		if (memory != 0)
 			free(memory);
+	}
+	void reset()
+	{
+		free(memory);
+		memory = (char *)malloc(1);
+		size = 0;
 	}
 };
 
@@ -77,9 +84,7 @@ int main(int argc, char* argv[])
 	curl_global_init(CURL_GLOBAL_ALL);
 
 	char query[200];
-	sprintf(query, "https://prod.api.pvp.net/api/lol/eune/v1.3/game/by-summoner/%d/recent?api_key=%s", teams[5][0], key);
-	
-	struct MemoryStruct chunk;
+	MemoryStruct chunk;
 	
 	curl = curl_easy_init();
 	if (curl) {
@@ -88,38 +93,45 @@ int main(int argc, char* argv[])
 
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_func);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
-		
-		curl_easy_setopt(curl, CURLOPT_URL, query);
 
-		/* Perform the request, res will get the return code */
-		res = curl_easy_perform(curl);
+		for (int i = 0; i < NUM_TEAMS; ++i) {
+			for (int j = 0; j < NUM_MEMBERS; ++j) {
+				sprintf(query, "https://prod.api.pvp.net/api/lol/eune/v1.3/game/by-summoner/%d/recent?api_key=%s", teams[i][j], key);
+				curl_easy_setopt(curl, CURLOPT_URL, query);
 
-		/* Check for errors */
-		if (res != CURLE_OK)
-			fprintf(stderr, "curl_easy_perform() failed: %s\n",
-							curl_easy_strerror(res));
-		else {		
-			cJSON *json;
-			char *out;
+				/* Perform the request, res will get the return code */
+				res = curl_easy_perform(curl);
+				/* Check for errors */
+				if (res != CURLE_OK)
+					fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+				else {
+					cJSON *json = cJSON_Parse(chunk.memory);
 
-			json = cJSON_Parse(chunk.memory);
-			if (!json) {
-				printf("Error before: [%s]\n",cJSON_GetErrorPtr());
-			} else {
-				out = cJSON_Print(json);
-				cJSON_Delete(json);
-				printf("%s\n",out);
-				free(out);
+					if (!json) {
+						printf("Error before: [%s]\n",cJSON_GetErrorPtr());
+					} else {
+						cJSON *games_json = cJSON_GetObjectItem(json, "games");
+
+						for (int k = 0; k < cJSON_GetArraySize(games_json); ++k) {
+							cJSON *game_json = cJSON_GetArrayItem(games_json, k); // game_json is a whole game entry
+							bool desired;
+							game *gam = new game(game_json, teams[i][j], desired);
+							/* Temporary, shows off how app collects data */
+							printf("(%I64d, %I64d)\ngame_id: %I64d\nPlaying as: %d\nSpells: %d %d\n%s\nKDA: %d / %d / %d\nwon: %s\ndesired: %s\n\n", gam->game_id, gam->summoner_id, gam->game_id, gam->champion_id, gam->spell1, gam->spell2, gam->sub_type, gam->stats->champions_killed, gam->stats->num_deaths, gam->stats->assists, gam->stats->win?"true":"false", desired?"true":"false");
+							if (desired) {
+								game_history.insert(gam);
+							}
+						}
+					}
+					cJSON_Delete(json);
+					chunk.reset();
+				}
+				Sleep(1100); // total requests: 80 (Rate Limit(s): 500 request(s) every 10 minute(s) / 10 request(s) every 10 second(s))
 			}
 		}
-
 		/* always cleanup */
 		curl_easy_cleanup(curl);
 	}
-
-	/*if (chunk.memory)
-		free(chunk.memory);
-	*/
 	
 	curl_global_cleanup();
 
