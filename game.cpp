@@ -5,9 +5,9 @@
 #include "game.hpp"
 
 /* Attemps to create a game object parsing the JSON string */
-game::game(cJSON *root, int summ_id, bool &desired)
+game::game(cJSON *root, int summ_id)
 {
-	desired = false;
+	//desired = false;
 	summoner_id = summ_id;
 	stats = new raw_stats;
 
@@ -20,24 +20,23 @@ game::game(cJSON *root, int summ_id, bool &desired)
 
 	strncpy(sub_type, cJSON_GetObjectItem(root, "subType")->valuestring, 20);
 	map_id = cJSON_GetObjectItem(root, "mapId")->valueint;
-	if 	(map_id == 1 && (!strcmp(sub_type, "NONE") || !strcmp(sub_type, "NORMAL") ||
-		!strcmp(sub_type, "RANKED_SOLO_5x5") || !strcmp(sub_type, "RANKED_TEAM_5x5")))
-		desired = true;
-
 
 	cJSON *fellow_players_json = cJSON_GetObjectItem(root, "fellowPlayers");
-	if (fellow_players_json != 0) { // players can be playing alone
-		fellow_players_count = cJSON_GetArraySize(fellow_players_json);
-		for (int j = 0; j < cJSON_GetArraySize(fellow_players_json); ++j) {
-			cJSON *player_json = cJSON_GetArrayItem(fellow_players_json, j); // player_json is a whole player entry
+	if (fellow_players_json != 0)
+		fellow_players_count = cJSON_GetArraySize(fellow_players_json); // players can be playing alone
+	else
+		fellow_players_count = 0;
 
-			int champ_id, summ_id, team_id;
-			champ_id = cJSON_GetObjectItem(player_json, "championId")->valueint;
-			summ_id = cJSON_GetObjectItem(player_json, "summonerId")->valuedouble;
-			team_id = cJSON_GetObjectItem(player_json, "teamId")->valueint;
-			fellow_players[j] = new player(champ_id, team_id, summ_id);
-		}
+	for (int j = 0; j < fellow_players_count; ++j) {
+		cJSON *player_json = cJSON_GetArrayItem(fellow_players_json, j); // player_json is a whole player entry
+
+		int champ_id, summ_id, team_id;
+		champ_id = cJSON_GetObjectItem(player_json, "championId")->valueint;
+		summ_id = cJSON_GetObjectItem(player_json, "summonerId")->valuedouble;
+		team_id = cJSON_GetObjectItem(player_json, "teamId")->valueint;
+		fellow_players[j] = new player(champ_id, team_id, summ_id);
 	}
+
 
 	/* int champions_killed, num_deaths, assists, gold, level, time_played, win; */
 	cJSON *raw_statistics = cJSON_GetObjectItem(root, "stats");
@@ -69,7 +68,13 @@ game::~game()
 {
 	for (int i = 0; i < 10; ++i)
 		if (fellow_players[i])
-			free(fellow_players[i]);
+			delete fellow_players[i];
+	delete stats;
+}
+
+void game::print_short_description()
+{
+	printf("(%I64d, %I64d)\ngame_id: %I64d\nPlaying as: %d\nSpells: %d %d\n%s\nKDA: %d / %d / %d\nwon: %s\n\n", game_id, summoner_id, game_id, champion_id, spell1, spell2, sub_type, stats->champions_killed, stats->num_deaths, stats->assists, stats->win?"true":"false");
 }
 
 bool game::operator<(const game &g) const

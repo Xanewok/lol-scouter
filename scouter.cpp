@@ -28,6 +28,15 @@ const int teams[NUM_TEAMS][NUM_MEMBERS] =	{{19381878, 19739336, 26154202, 299454
 											{33863101, 28545674, 33863166, 34333251, 30972927},	/* Team Erasers */
 											{20539748, 20493466, 21803047, 26121772, 27824463}};/* Baited */
 
+int find_team(int summoner_id)
+{
+	for (int i = 0; i < NUM_TEAMS; i++)
+		for (int j = 0; j < NUM_MEMBERS; j++)
+			if (teams[i][j] == summoner_id)
+				return i;
+	return -1;
+}
+
 struct MemoryStruct {
 	char *memory;
 	size_t size;
@@ -75,7 +84,6 @@ void save_to_file(const char *name)
 {
 	FILE *fp;
 	fp = fopen(name, "w+");
-
 	cJSON *root = cJSON_CreateArray();
 	for (std::set<game *>::iterator it = game_history.begin(); it != game_history.end(); it++) {
 		cJSON *game = cJSON_CreateObject();
@@ -94,7 +102,6 @@ void save_to_file(const char *name)
 
 			cJSON_AddItemToObject(game, "fellowPlayers", fellow_players);
 		}
-
 		cJSON *stats = cJSON_CreateObject();
 		cJSON_AddItemToObject(stats, "championsKilled", cJSON_CreateNumber((*it)->stats->champions_killed));
 		cJSON_AddItemToObject(stats, "numDeaths", cJSON_CreateNumber((*it)->stats->num_deaths));
@@ -106,6 +113,8 @@ void save_to_file(const char *name)
 		cJSON_AddItemToObject(stats, "timePlayed", cJSON_CreateNumber((*it)->stats->time_played));
 		cJSON_AddItemToObject(stats, "win", (*it)->stats->win? cJSON_CreateTrue() : cJSON_CreateFalse());
 		cJSON_AddItemToObject(game, "stats", stats);
+		// Custom object, used for data saving/loading convenience
+		cJSON_AddItemToObject(game, "summonerId", cJSON_CreateNumber((*it)->summoner_id));
 
 		cJSON_AddItemToObject(game, "gameId", cJSON_CreateNumber((*it)->game_id));
 		cJSON_AddItemToObject(game, "createDate", cJSON_CreateNumber((*it)->create_date));
@@ -116,16 +125,51 @@ void save_to_file(const char *name)
 		cJSON_AddItemToObject(game, "mapId", cJSON_CreateNumber((*it)->map_id));
 		cJSON_AddItemToObject(game, "subType", cJSON_CreateString((*it)->sub_type));
 
-
 		cJSON_AddItemToArray(root, game);
 	}
-
 	char *out = cJSON_Print(root);
-
-	 //out = cJSON_Print(root);
 	fwrite(out, sizeof(char), strlen(out), fp);
 	free(out);
 	fclose(fp);
+}
+
+void read_from_file(const char *name)
+{
+	FILE *fp;
+	char *buf = 0;
+	fp = fopen(name, "r");
+	if (fp != 0) {
+		fseek(fp, 0, SEEK_END);
+		long size = ftell(fp);
+		fseek(fp, 0, SEEK_SET);
+
+		buf = (char *)malloc(size);
+
+		if (buf == 0)
+			printf("mem error\n");
+
+		fread(buf, 1, size, fp);
+
+		fclose(fp);
+	}
+
+	if (buf != 0) {
+		cJSON *json = cJSON_Parse(buf);
+		if (!json) {
+			printf("Error before: [%s]\n",cJSON_GetErrorPtr());
+		} else {
+			for (int i = 0; i < cJSON_GetArraySize(json); ++i) {
+				cJSON *game_json = cJSON_GetArrayItem(json, i); // game_json is a whole game entry
+
+				int summ_id = cJSON_GetObjectItem(game_json, "summonerId")->valuedouble;
+				game *gam = new game(game_json, summ_id);
+
+				game_history.insert(gam);
+				gam->print_short_description();
+			}
+		}
+		free(buf);
+	}
 }
 
 int main(int argc, char* argv[])
@@ -171,12 +215,14 @@ int main(int argc, char* argv[])
 
 						for (int k = 0; k < cJSON_GetArraySize(games_json); ++k) {
 							cJSON *game_json = cJSON_GetArrayItem(games_json, k); // game_json is a whole game entry
-							bool desired;
-							game *gam = new game(game_json, teams[i][j], desired);
-							/* Temporary, shows off how app collects data */
-							printf("(%I64d, %I64d)\ngame_id: %I64d\nPlaying as: %d\nSpells: %d %d\n%s\nKDA: %d / %d / %d\nwon: %s\ndesired: %s\n\n", gam->game_id, gam->summoner_id, gam->game_id, gam->champion_id, gam->spell1, gam->spell2, gam->sub_type, gam->stats->champions_killed, gam->stats->num_deaths, gam->stats->assists, gam->stats->win?"true":"false", desired?"true":"false");
-							if (desired) {
+
+							game *gam = new game(game_json, teams[i][j]);
+
+							if (gam->map_id == 1 && (!strcmp(gam->sub_type, "NONE") || !strcmp(gam->sub_type, "NORMAL") ||
+											!strcmp(gam->sub_type, "RANKED_SOLO_5x5") || !strcmp(gam->sub_type, "RANKED_TEAM_5x5"))) {
 								game_history.insert(gam);
+
+								gam->print_short_description();
 							}
 						}
 					}
