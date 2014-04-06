@@ -11,14 +11,14 @@ struct player {
 };
 
 struct raw_stats {
-	int champions_killed, num_deaths, assists, minions_killed, neutral_minions_killed, gold, level, time_played;
+	int champions_killed, num_deaths, assists, minions_killed, neutral_minions_killed, gold_earned, level, time_played;
 	bool win;
 };
 
 /* 	Mirrors the Riot API game structure */
 struct game {
 	long long int game_id, summoner_id, create_date;
-	int champion_id, spell1, spell2, team_id;
+	int champion_id, spell1, spell2, team_id, map_id, fellow_players_count;
 	char sub_type[20];
 	raw_stats *stats;
 	player *fellow_players[10];

@@ -68,7 +68,64 @@ size_t write_func( char *ptr, size_t size, size_t nmemb, void *userdata)
 
 void init()
 {
-	
+
+}
+
+void save_to_file(const char *name)
+{
+	FILE *fp;
+	fp = fopen(name, "w+");
+
+	cJSON *root = cJSON_CreateArray();
+	for (std::set<game *>::iterator it = game_history.begin(); it != game_history.end(); it++) {
+		cJSON *game = cJSON_CreateObject();
+
+		if ((*it)->fellow_players_count != 0) {
+			cJSON *fellow_players = cJSON_CreateArray();
+
+			for (int i = 0; i < (*it)->fellow_players_count; i++) {
+				cJSON *player_entry = cJSON_CreateObject();
+				cJSON_AddItemToObject(player_entry, "championId", cJSON_CreateNumber((*it)->fellow_players[i]->champion_id));
+				cJSON_AddItemToObject(player_entry, "teamId", cJSON_CreateNumber((*it)->fellow_players[i]->team_id));
+				cJSON_AddItemToObject(player_entry, "summonerId", cJSON_CreateNumber((*it)->fellow_players[i]->summoner_id));
+
+				cJSON_AddItemToArray(fellow_players, player_entry);
+			}
+
+			cJSON_AddItemToObject(game, "fellowPlayers", fellow_players);
+		}
+
+		cJSON *stats = cJSON_CreateObject();
+		cJSON_AddItemToObject(stats, "championsKilled", cJSON_CreateNumber((*it)->stats->champions_killed));
+		cJSON_AddItemToObject(stats, "numDeaths", cJSON_CreateNumber((*it)->stats->num_deaths));
+		cJSON_AddItemToObject(stats, "assists", cJSON_CreateNumber((*it)->stats->assists));
+		cJSON_AddItemToObject(stats, "minionsKilled", cJSON_CreateNumber((*it)->stats->minions_killed));
+		cJSON_AddItemToObject(stats, "neutralMinionsKilled", cJSON_CreateNumber((*it)->stats->neutral_minions_killed));
+		cJSON_AddItemToObject(stats, "goldEarned", cJSON_CreateNumber((*it)->stats->gold_earned));
+		cJSON_AddItemToObject(stats, "level", cJSON_CreateNumber((*it)->stats->level));
+		cJSON_AddItemToObject(stats, "timePlayed", cJSON_CreateNumber((*it)->stats->time_played));
+		cJSON_AddItemToObject(stats, "win", (*it)->stats->win? cJSON_CreateTrue() : cJSON_CreateFalse());
+		cJSON_AddItemToObject(game, "stats", stats);
+
+		cJSON_AddItemToObject(game, "gameId", cJSON_CreateNumber((*it)->game_id));
+		cJSON_AddItemToObject(game, "createDate", cJSON_CreateNumber((*it)->create_date));
+		cJSON_AddItemToObject(game, "championId", cJSON_CreateNumber((*it)->champion_id));
+		cJSON_AddItemToObject(game, "spell1", cJSON_CreateNumber((*it)->spell1));
+		cJSON_AddItemToObject(game, "spell2", cJSON_CreateNumber((*it)->spell2));
+		cJSON_AddItemToObject(game, "teamId", cJSON_CreateNumber((*it)->team_id));
+		cJSON_AddItemToObject(game, "mapId", cJSON_CreateNumber((*it)->map_id));
+		cJSON_AddItemToObject(game, "subType", cJSON_CreateString((*it)->sub_type));
+
+
+		cJSON_AddItemToArray(root, game);
+	}
+
+	char *out = cJSON_Print(root);
+
+	 //out = cJSON_Print(root);
+	fwrite(out, sizeof(char), strlen(out), fp);
+	free(out);
+	fclose(fp);
 }
 
 int main(int argc, char* argv[])
@@ -85,7 +142,7 @@ int main(int argc, char* argv[])
 
 	char query[200];
 	MemoryStruct chunk;
-	
+
 	curl = curl_easy_init();
 	if (curl) {
 		/* Tell libcurl to *not* verify the peer. With libcurl you disable this with */
@@ -129,10 +186,11 @@ int main(int argc, char* argv[])
 				Sleep(1100); // total requests: 80 (Rate Limit(s): 500 request(s) every 10 minute(s) / 10 request(s) every 10 second(s))
 			}
 		}
+		save_to_file("testing_output.txt");
 		/* always cleanup */
 		curl_easy_cleanup(curl);
 	}
-	
+
 	curl_global_cleanup();
 
 	return 0;
