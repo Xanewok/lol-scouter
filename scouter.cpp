@@ -225,7 +225,8 @@ int main(int argc, char* argv[])
 
 								game *gam = new game(game_json, teams[i][j]);
 
-								if (gam->map_id == 1 && (!strcmp(gam->sub_type, "NONE") || !strcmp(gam->sub_type, "NORMAL") ||
+								if (gam->map_id == 1 && game->fellow_players_count == 9 && // We only need full SR games
+												(!strcmp(gam->sub_type, "NONE") || !strcmp(gam->sub_type, "NORMAL") ||
 												!strcmp(gam->sub_type, "RANKED_SOLO_5x5") || !strcmp(gam->sub_type, "RANKED_TEAM_5x5"))) {
 									game_history.insert(gam);
 
