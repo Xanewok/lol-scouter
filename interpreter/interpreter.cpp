@@ -3,7 +3,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
-//#include <windows.h>
 #include <set>
 
 #define MIN_TEAMMATES_COUNT 4
@@ -92,7 +91,7 @@ bool read_game_history()
 		else
 			break;
 	}
-	
+
 	if (idx == 0)
 		return false;
 	else {
@@ -123,7 +122,7 @@ int main()
 
 				for (int i = 0; i < gra.fellow_players_count; i++) {
 					player *gracz = gra.fellow_players[i];
-	
+
 					for (int j = 0; j < NUM_MEMBERS; j++) {
 						if (teams[bgt_team][j] == (int)gracz->summoner_id) {
 							count++;
@@ -138,15 +137,14 @@ int main()
 					printf("Dodaje gre o game_id: %d\n", (int)gra.game_id);
 					bgt_team_game_history.insert(*it);
 				} else {
-					player_game_history[bgt_team]
+					//player_game_history[bgt_team]
 					// Znalezlismy gre teamowa, ale nikt z BGT nie gral, wiec zapiszmy to do solo ranked game
-					
+
 				}
 			} else if (!strcmp(gra.sub_type, "NORMAL")) {
 				// Znalezlismy normala
-				
+
 			} else if (!strcmp(gra.sub_type, "RANKED_SOLO_5x5")) {
-				soloq:
 				// Znalezlismy soloq
 			}
 		}
