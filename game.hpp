@@ -29,4 +29,8 @@ struct game {
 	bool operator<(const game &g) const;
 };
 
+struct game_comparator {
+	bool operator() (game* const& l, game* const& r);
+};
+
 #endif

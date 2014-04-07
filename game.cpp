@@ -83,3 +83,8 @@ bool game::operator<(const game &g) const
 }
 
 player::player(int champion_id, int team_id, int summoner_id) : champion_id(champion_id), team_id(team_id), summoner_id(summoner_id) {}
+
+bool game_comparator::operator() (game* const& l, game* const& r)
+{
+		return (*l) < (*r);
+}

@@ -7,8 +7,10 @@
 
 #define NUM_TEAMS 16
 #define NUM_MEMBERS 5
+#define SINGLE_REQUEST_INTERVAL 1100
+#define FULL_REQUEST_INTERVAL 10800000 // 3 hours * 60 minutes * 60 seconds * 1000 milliseconds
 
-std::set<game *> game_history;
+std::set<game *, game_comparator > game_history;
 
 /* Temporary team holder */
 const int teams[NUM_TEAMS][NUM_MEMBERS] =	{{19381878, 19739336, 26154202, 29945492, 24423271},/* Random Five */
@@ -129,6 +131,8 @@ void save_to_file(const char *name)
 	}
 	char *out = cJSON_Print(root);
 	fwrite(out, sizeof(char), strlen(out), fp);
+
+	cJSON_Delete(root);
 	free(out);
 	fclose(fp);
 }
@@ -151,7 +155,8 @@ void read_from_file(const char *name)
 		fread(buf, 1, size, fp);
 
 		fclose(fp);
-	}
+	} else
+		return; // don't do stuff when we can't access the input data
 
 	if (buf != 0) {
 		cJSON *json = cJSON_Parse(buf);
@@ -168,6 +173,7 @@ void read_from_file(const char *name)
 				gam->print_short_description();
 			}
 		}
+		cJSON_Delete(json);
 		free(buf);
 	}
 }
@@ -195,44 +201,59 @@ int main(int argc, char* argv[])
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_func);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
 
-		for (int i = 0; i < NUM_TEAMS; ++i) {
-			for (int j = 0; j < NUM_MEMBERS; ++j) {
-				sprintf(query, "https://prod.api.pvp.net/api/lol/eune/v1.3/game/by-summoner/%d/recent?api_key=%s", teams[i][j], key);
-				curl_easy_setopt(curl, CURLOPT_URL, query);
+		while (true) { // Main loop, allows to make multiple requests in the background
+			for (int i = 0; i < NUM_TEAMS; ++i) {
+				for (int j = 0; j < NUM_MEMBERS; ++j) {
+					sprintf(query, "https://prod.api.pvp.net/api/lol/eune/v1.3/game/by-summoner/%d/recent?api_key=%s", teams[i][j], key);
+					curl_easy_setopt(curl, CURLOPT_URL, query);
 
-				/* Perform the request, res will get the return code */
-				res = curl_easy_perform(curl);
-				/* Check for errors */
-				if (res != CURLE_OK)
-					fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-				else {
-					cJSON *json = cJSON_Parse(chunk.memory);
+					/* Perform the request, res will get the return code */
+					res = curl_easy_perform(curl);
+					/* Check for errors */
+					if (res != CURLE_OK)
+						fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+					else {
+						cJSON *json = cJSON_Parse(chunk.memory);
 
-					if (!json) {
-						printf("Error before: [%s]\n",cJSON_GetErrorPtr());
-					} else {
-						cJSON *games_json = cJSON_GetObjectItem(json, "games");
+						if (!json) {
+							printf("Error before: [%s]\n",cJSON_GetErrorPtr());
+						} else {
+							cJSON *games_json = cJSON_GetObjectItem(json, "games");
 
-						for (int k = 0; k < cJSON_GetArraySize(games_json); ++k) {
-							cJSON *game_json = cJSON_GetArrayItem(games_json, k); // game_json is a whole game entry
+							for (int k = 0; k < cJSON_GetArraySize(games_json); ++k) {
+								cJSON *game_json = cJSON_GetArrayItem(games_json, k); // game_json is a whole game entry
 
-							game *gam = new game(game_json, teams[i][j]);
+								game *gam = new game(game_json, teams[i][j]);
 
-							if (gam->map_id == 1 && (!strcmp(gam->sub_type, "NONE") || !strcmp(gam->sub_type, "NORMAL") ||
-											!strcmp(gam->sub_type, "RANKED_SOLO_5x5") || !strcmp(gam->sub_type, "RANKED_TEAM_5x5"))) {
-								game_history.insert(gam);
+								if (gam->map_id == 1 && (!strcmp(gam->sub_type, "NONE") || !strcmp(gam->sub_type, "NORMAL") ||
+												!strcmp(gam->sub_type, "RANKED_SOLO_5x5") || !strcmp(gam->sub_type, "RANKED_TEAM_5x5"))) {
+									game_history.insert(gam);
 
-								gam->print_short_description();
+									gam->print_short_description();
+								}
 							}
 						}
+						cJSON_Delete(json);
+						chunk.reset();
 					}
-					cJSON_Delete(json);
-					chunk.reset();
+					Sleep(SINGLE_REQUEST_INTERVAL); // total requests: 80 (Rate Limit(s): 500 request(s) every 10 minute(s) / 10 request(s) every 10 second(s))
 				}
-				Sleep(1100); // total requests: 80 (Rate Limit(s): 500 request(s) every 10 minute(s) / 10 request(s) every 10 second(s))
 			}
+			char output_file[20];
+			for (int i = 0; ; i++) {
+				sprintf(output_file, "output_%d.txt", i);
+				FILE *fp = fopen(output_file, "r+");
+				if (fp != 0)
+					continue; // we're looking for the next available file for creation
+				else {
+					fclose(fp);
+					break;
+				}
+			}
+			printf("Size of the set: %d\n", game_history.size());
+			save_to_file(output_file);
+			Sleep(FULL_REQUEST_INTERVAL); // interval between full fetch sessions
 		}
-		save_to_file("testing_output.txt");
 		/* always cleanup */
 		curl_easy_cleanup(curl);
 	}
