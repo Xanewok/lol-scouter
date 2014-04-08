@@ -12,8 +12,8 @@ scouter: cJSON.o game.o scouter.o
 scouter.o:
 	$(CC) $(CFLAGS) -c scouter.cpp
 
-interpreter: cJSON.o game.o interpreter.o
-	$(CC) $(CFLAGS) interpreter.o cJSON.o game.o -o $(OUT_PATH)/interpreter.exe
+interpreter: cJSON.o team_game.o game.o interpreter.o
+	$(CC) $(CFLAGS) interpreter.o cJSON.o team_game.o game.o -o $(OUT_PATH)/interpreter.exe
 
 interpreter.o:
 	$(CC) $(CFLAGS) -c interpreter.cpp
@@ -23,6 +23,9 @@ cJSON.o:
 
 game.o:
 	$(CC) $(CFLAGS) -c game.cpp
+	
+team_game.o:
+	$(CC) $(CFLAGS) -c team_game.cpp
 	
 clean:
 	del *.o

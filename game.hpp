@@ -23,7 +23,7 @@ struct game {
 	raw_stats *stats;
 	player *fellow_players[10];
 
-	game(cJSON *root, int summoner_id);
+	game(cJSON *root, int summ_id);
 	~game();
 	void print_short_description();
 	bool operator<(const game &g) const;
