@@ -1,5 +1,5 @@
-#include "..\game.hpp"
-#include "..\constants.h"
+#include "game.hpp"
+#include "constants.h"
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
