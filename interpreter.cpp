@@ -1,5 +1,5 @@
 #include "game.hpp"
-#include "constants.h"
+#include "static_data.h"
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -12,7 +12,7 @@
 
 std::set<game *, game_comparator> game_history, player_ranked_game_history[NUM_TEAMS][NUM_TEAM_MEMBERS], player_normal_game_history[NUM_TEAMS][NUM_TEAM_MEMBERS];
 std::set<team_game *, team_game_comparator> team_game_history;
-
+/*
 int find_team(int summoner_id)
 {
 	for (int i = 0; i < NUM_TEAMS; i++)
@@ -29,7 +29,7 @@ int find_summoner(int summoner_id)
 			if (TEAMS[i][j] == summoner_id)
 				return j;
 	return -1;
-}
+}*/
 
 void read_games_from_file(const char *name)
 {
@@ -173,6 +173,7 @@ int main()
 		if ((*it)->found_player_count >= 4) {
 			bgt_practice_count++;
 			(*it)->print_short_description(); //- use that to see the overview of a game including personal stats for each person etc.
+			putchar('\n');
 		}
 	}
 

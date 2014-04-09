@@ -3,7 +3,7 @@
 #include <cstring>
 #include "cJSON/cJSON.h"
 #include "team_game.hpp"
-#include "constants.h"
+#include "static_data.h"
 
 player_perspective::player_perspective(int summoner_id, int champion_id, int team_id) :  summoner_id(summoner_id), champion_id(champion_id), team_id(team_id)
 {
@@ -107,11 +107,12 @@ void team_game::print_short_description()
 			//printf("i %d cnt %d", i, count);
 			if (count == i + 1) {
 				if (player->spell1 != -1) {
-					printf("Summoner %I64d played %d, KDA: %d/%d/%d CS: %d+%d (Summoner spells: %s %s)\n",
-							player->summoner_id, player->champion_id,
-							player->champions_killed, player->num_deaths, player->assists, player->minions_killed, player->neutral_minions_killed, SUMMONER_SPELLS[player->spell1], SUMMONER_SPELLS[player->spell2]);
+					
+					printf("%s played %s (%s %s), KDA: %d/%d/%d CS: %d+%d\n",
+							SUMMONER_NAMES[find_team(player->summoner_id)][find_summoner(player->summoner_id)], get_champion_name(player->champion_id),SUMMONER_SPELLS[player->spell1], SUMMONER_SPELLS[player->spell2],
+							player->champions_killed, player->num_deaths, player->assists, player->minions_killed, player->neutral_minions_killed);
 				} else
-					printf("Summoner %I64d played %d\n", player->summoner_id, player->champion_id);
+					printf("Summoner %I64d played %s\n", player->summoner_id, get_champion_name(player->champion_id));
 
 				count = i >= 4? 5 : 0; // not 100% sure about 5 being here
 				break;
