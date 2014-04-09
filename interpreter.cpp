@@ -103,8 +103,7 @@ void read_team_games_from_file(const char *name)
 
 				int summ_id = cJSON_GetObjectItem(game_json, "summonerId")->valuedouble;
 				int game_id = cJSON_GetObjectItem(game_json, "gameId")->valuedouble;
-				
-	
+
 				std::set<team_game *, team_game_comparator>::iterator it = team_game_history.find(new team_game(game_id));
 				if (it == team_game_history.end()) // Nie znaleziono
 					team_game_history.insert(new team_game(game_json, summ_id));
@@ -166,14 +165,14 @@ int main()
 			} else if (!strcmp((*it)->sub_type, "NONE") || !strcmp((*it)->sub_type, "RANKED_TEAM_5x5") || !strcmp((*it)->sub_type, "RANKED_SOLO_5x5")) {
 				player_ranked_game_history[bgt_team][find_summoner((*it)->summoner_id)].insert(*it);
 			}
-		}	
+		}
 	}
-	
+
 	int bgt_practice_count = 0;
 	for (std::set<team_game *, team_game_comparator>::iterator it = team_game_history.begin(); it != team_game_history.end(); ++it) {
 		if ((*it)->found_player_count >= 4) {
 			bgt_practice_count++;
-			//(*it)->print_short_description(); - use that to see the overview of a game including personal stats for each person etc.
+			(*it)->print_short_description(); //- use that to see the overview of a game including personal stats for each person etc.
 		}
 	}
 

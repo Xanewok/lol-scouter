@@ -3,6 +3,7 @@
 #include <cstring>
 #include "cJSON/cJSON.h"
 #include "team_game.hpp"
+#include "constants.h"
 
 player_perspective::player_perspective(int summoner_id, int champion_id, int team_id) :  summoner_id(summoner_id), champion_id(champion_id), team_id(team_id)
 {
@@ -87,17 +88,48 @@ team_game::team_game(int game_id) : game_id(game_id) {}
 
 void team_game::print_short_description()
 {
-	printf("game_id: %I64d\nplayer_count: %d\n", game_id, player_count);
+	printf("game_id: %I64d\nplayer_count: %d, time_played: ~%d minutes\n", game_id, player_count, player_perspectives[0]->time_played / 60);
+	//player_perspective *players[10] = player_perspectives;
+	//printf("BLUE TEAM: %s\n", player_perspectives[0]->team_id == 100 && player_perspectives[0]->win? "(Won)" : "");
+	
+	int count = 0;
+	for (int i = 0; i < player_count; ++i) {
+		if (i == 0)
+			printf("Blue Team: %s\n", (player_perspectives[0]->team_id == 100 && player_perspectives[0]->win) || (player_perspectives[0]->team_id == 200 && !player_perspectives[0]->win)? "(Won)" : "");
+		else if (i == 5)
+			printf("Purple Team: %s\n", (player_perspectives[0]->team_id == 200 && player_perspectives[0]->win) || (player_perspectives[0]->team_id == 100 && !player_perspectives[0]->win)? "(Won)" : "");
+		for (int j = 0; j < player_count; ++j) {
+			player_perspective *player = player_perspectives[j];
+
+			if ((i < 5 && player->team_id == 100) ||
+				(i >= 5 && player->team_id == 200))
+				count++;
+			//printf("i %d cnt %d", i, count);
+			if (count == i + 1) {
+				if (player->spell1 != -1) {
+					printf("Summoner %I64d played %d, KDA: %d/%d/%d CS: %d+%d (Summoner spells: %s %s)\n",
+							player->summoner_id, player->champion_id,
+							player->champions_killed, player->num_deaths, player->assists, player->minions_killed, player->neutral_minions_killed, SUMMONER_SPELLS[player->spell1], SUMMONER_SPELLS[player->spell2]);
+				} else
+					printf("Summoner %I64d played %d\n", player->summoner_id, player->champion_id);
+
+				count = i >= 4? 5 : 0; // not 100% sure about 5 being here
+				break;
+			}
+		}
+	}
+	/*
 	for (int i = 0; i < player_count; i++) {
 		player_perspective *player = player_perspectives[i];
 		if (player->spell1 != -1) {
-			printf("Summoner %I64d played %d on team %d for roughly %d minutes and %s, KDA: %d/%d/%d CS: %d+%d\n",
+			printf("Summoner %I64d played %d on team %d for roughly %d minutes and %s, KDA: %d/%d/%d CS: %d+%d (Summoner spells: %s %s)\n",
 					player->summoner_id, player->champion_id, player->team_id, player->time_played/60, player->win? "won" : "lost",
-					player->champions_killed, player->num_deaths, player->assists, player->minions_killed, player->neutral_minions_killed);
+					player->champions_killed, player->num_deaths, player->assists, player->minions_killed, player->neutral_minions_killed, SUMMONER_SPELLS[player->spell1], SUMMONER_SPELLS[player->spell2]);
 		} else {
 			printf("Summoner %I64d played %d on team %d\n", player->summoner_id, player->champion_id, player->team_id);
 		}
 	}
+	*/
 }
 
 bool team_game::operator<(const team_game &g) const
