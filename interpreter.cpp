@@ -12,24 +12,6 @@
 
 std::set<game *, game_comparator> game_history, player_ranked_game_history[NUM_TEAMS][NUM_TEAM_MEMBERS], player_normal_game_history[NUM_TEAMS][NUM_TEAM_MEMBERS];
 std::set<team_game *, team_game_comparator> team_game_history;
-/*
-int find_team(int summoner_id)
-{
-	for (int i = 0; i < NUM_TEAMS; i++)
-		for (int j = 0; j < NUM_TEAM_MEMBERS; j++)
-			if (TEAMS[i][j] == summoner_id)
-				return i;
-	return -1;
-}
-
-int find_summoner(int summoner_id)
-{
-	for (int i = 0; i < NUM_TEAMS; i++)
-		for (int j = 0; j < NUM_TEAM_MEMBERS; j++)
-			if (TEAMS[i][j] == summoner_id)
-				return j;
-	return -1;
-}*/
 
 void read_games_from_file(const char *name)
 {

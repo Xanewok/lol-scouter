@@ -60,361 +60,361 @@ char * get_champion_name(int champion_id)
 {
 	switch (champion_id) {
 	case 412:
-		return "Thresh";
+		return (char *)"Thresh";
 		break;
 	case 266:
-		return "Aatrox";
+		return (char *)"Aatrox";
 		break;
 	case 23:
-		return "Tryndamere";
+		return (char *)"Tryndamere";
 		break;
 	case 79:
-		return "Gragas";
+		return (char *)"Gragas";
 		break;
 	case 69:
-		return "Cassiopeia";
+		return (char *)"Cassiopeia";
 		break;
 	case 13:
-		return "Ryze";
+		return (char *)"Ryze";
 		break;
 	case 78:
-		return "Poppy";
+		return (char *)"Poppy";
 		break;
 	case 14:
-		return "Sion";
+		return (char *)"Sion";
 		break;
 	case 1:
-		return "Annie";
+		return (char *)"Annie";
 		break;
 	case 111:
-		return "Nautilus";
+		return (char *)"Nautilus";
 		break;
 	case 43:
-		return "Karma";
+		return (char *)"Karma";
 		break;
 	case 99:
-		return "Lux";
+		return (char *)"Lux";
 		break;
 	case 103:
-		return "Ahri";
+		return (char *)"Ahri";
 		break;
 	case 2:
-		return "Olaf";
+		return (char *)"Olaf";
 		break;
 	case 112:
-		return "Viktor";
+		return (char *)"Viktor";
 		break;
 	case 34:
-		return "Anivia";
+		return (char *)"Anivia";
 		break;
 	case 86:
-		return "Garen";
+		return (char *)"Garen";
 		break;
 	case 27:
-		return "Singed";
+		return (char *)"Singed";
 		break;
 	case 127:
-		return "Lissandra";
+		return (char *)"Lissandra";
 		break;
 	case 57:
-		return "Maokai";
+		return (char *)"Maokai";
 		break;
 	case 25:
-		return "Morgana";
+		return (char *)"Morgana";
 		break;
 	case 28:
-		return "Evelynn";
+		return (char *)"Evelynn";
 		break;
 	case 105:
-		return "Fizz";
+		return (char *)"Fizz";
 		break;
 	case 238:
-		return "Zed";
+		return (char *)"Zed";
 		break;
 	case 74:
-		return "Heimerdinger";
+		return (char *)"Heimerdinger";
 		break;
 	case 68:
-		return "Rumble";
+		return (char *)"Rumble";
 		break;
 	case 37:
-		return "Sona";
+		return (char *)"Sona";
 		break;
 	case 82:
-		return "Mordekaiser";
+		return (char *)"Mordekaiser";
 		break;
 	case 96:
-		return "Kog'Maw";
+		return (char *)"Kog'Maw";
 		break;
 	case 55:
-		return "Katarina";
+		return (char *)"Katarina";
 		break;
 	case 117:
-		return "Lulu";
+		return (char *)"Lulu";
 		break;
 	case 22:
-		return "Ashe";
+		return (char *)"Ashe";
 		break;
 	case 30:
-		return "Karthus";
+		return (char *)"Karthus";
 		break;
 	case 12:
-		return "Alistar";
+		return (char *)"Alistar";
 		break;
 	case 122:
-		return "Darius";
+		return (char *)"Darius";
 		break;
 	case 67:
-		return "Vayne";
+		return (char *)"Vayne";
 		break;
 	case 77:
-		return "Udyr";
+		return (char *)"Udyr";
 		break;
 	case 110:
-		return "Varus";
+		return (char *)"Varus";
 		break;
 	case 89:
-		return "Leona";
+		return (char *)"Leona";
 		break;
 	case 126:
-		return "Jayce";
+		return (char *)"Jayce";
 		break;
 	case 134:
-		return "Syndra";
+		return (char *)"Syndra";
 		break;
 	case 80:
-		return "Pantheon";
+		return (char *)"Pantheon";
 		break;
 	case 92:
-		return "Riven";
+		return (char *)"Riven";
 		break;
 	case 121:
-		return "Kha'Zix";
+		return (char *)"Kha'Zix";
 		break;
 	case 42:
-		return "Corki";
+		return (char *)"Corki";
 		break;
 	case 51:
-		return "Caitlyn";
+		return (char *)"Caitlyn";
 		break;
 	case 76:
-		return "Nidalee";
+		return (char *)"Nidalee";
 		break;
 	case 85:
-		return "Kennen";
+		return (char *)"Kennen";
 		break;
 	case 3:
-		return "Galio";
+		return (char *)"Galio";
 		break;
 	case 45:
-		return "Veigar";
+		return (char *)"Veigar";
 		break;
 	case 104:
-		return "Graves";
+		return (char *)"Graves";
 		break;
 	case 90:
-		return "Malzahar";
+		return (char *)"Malzahar";
 		break;
 	case 254:
-		return "Vi";
+		return (char *)"Vi";
 		break;
 	case 10:
-		return "Kayle";
+		return (char *)"Kayle";
 		break;
 	case 39:
-		return "Irelia";
+		return (char *)"Irelia";
 		break;
 	case 64:
-		return "Lee Sin";
+		return (char *)"Lee Sin";
 		break;
 	case 60:
-		return "Elise";
+		return (char *)"Elise";
 		break;
 	case 106:
-		return "Volibear";
+		return (char *)"Volibear";
 		break;
 	case 20:
-		return "Nunu";
+		return (char *)"Nunu";
 		break;
 	case 4:
-		return "Twisted Fate";
+		return (char *)"Twisted Fate";
 		break;
 	case 24:
-		return "Jax";
+		return (char *)"Jax";
 		break;
 	case 102:
-		return "Shyvana";
+		return (char *)"Shyvana";
 		break;
 	case 36:
-		return "Dr. Mundo";
+		return (char *)"Dr. Mundo";
 		break;
 	case 63:
-		return "Brand";
+		return (char *)"Brand";
 		break;
 	case 131:
-		return "Diana";
+		return (char *)"Diana";
 		break;
 	case 113:
-		return "Sejuani";
+		return (char *)"Sejuani";
 		break;
 	case 8:
-		return "Vladimir";
+		return (char *)"Vladimir";
 		break;
 	case 154:
-		return "Zac";
+		return (char *)"Zac";
 		break;
 	case 133:
-		return "Quinn";
+		return (char *)"Quinn";
 		break;
 	case 84:
-		return "Akali";
+		return (char *)"Akali";
 		break;
 	case 18:
-		return "Tristana";
+		return (char *)"Tristana";
 		break;
 	case 120:
-		return "Hecarim";
+		return (char *)"Hecarim";
 		break;
 	case 15:
-		return "Sivir";
+		return (char *)"Sivir";
 		break;
 	case 236:
-		return "Lucian";
+		return (char *)"Lucian";
 		break;
 	case 107:
-		return "Rengar";
+		return (char *)"Rengar";
 		break;
 	case 19:
-		return "Warwick";
+		return (char *)"Warwick";
 		break;
 	case 72:
-		return "Skarner";
+		return (char *)"Skarner";
 		break;
 	case 54:
-		return "Malphite";
+		return (char *)"Malphite";
 		break;
 	case 157:
-		return "Yasuo";
+		return (char *)"Yasuo";
 		break;
 	case 101:
-		return "Xerath";
+		return (char *)"Xerath";
 		break;
 	case 17:
-		return "Teemo";
+		return (char *)"Teemo";
 		break;
 	case 75:
-		return "Nasus";
+		return (char *)"Nasus";
 		break;
 	case 58:
-		return "Renekton";
+		return (char *)"Renekton";
 		break;
 	case 119:
-		return "Draven";
+		return (char *)"Draven";
 		break;
 	case 35:
-		return "Shaco";
+		return (char *)"Shaco";
 		break;
 	case 50:
-		return "Swain";
+		return (char *)"Swain";
 		break;
 	case 115:
-		return "Ziggs";
+		return (char *)"Ziggs";
 		break;
 	case 40:
-		return "Janna";
+		return (char *)"Janna";
 		break;
 	case 91:
-		return "Talon";
+		return (char *)"Talon";
 		break;
 	case 61:
-		return "Orianna";
+		return (char *)"Orianna";
 		break;
 	case 9:
-		return "Fiddlesticks";
+		return (char *)"Fiddlesticks";
 		break;
 	case 114:
-		return "Fiora";
+		return (char *)"Fiora";
 		break;
 	case 31:
-		return "Cho'Gath";
+		return (char *)"Cho'Gath";
 		break;
 	case 33:
-		return "Rammus";
+		return (char *)"Rammus";
 		break;
 	case 7:
-		return "LeBlanc";
+		return (char *)"LeBlanc";
 		break;
 	case 26:
-		return "Zilean";
+		return (char *)"Zilean";
 		break;
 	case 16:
-		return "Soraka";
+		return (char *)"Soraka";
 		break;
 	case 56:
-		return "Nocturne";
+		return (char *)"Nocturne";
 		break;
 	case 222:
-		return "Jinx";
+		return (char *)"Jinx";
 		break;
 	case 83:
-		return "Yorick";
+		return (char *)"Yorick";
 		break;
 	case 6:
-		return "Urgot";
+		return (char *)"Urgot";
 		break;
 	case 21:
-		return "Miss Fortune";
+		return (char *)"Miss Fortune";
 		break;
 	case 62:
-		return "Wukong";
+		return (char *)"Wukong";
 		break;
 	case 53:
-		return "Blitzcrank";
+		return (char *)"Blitzcrank";
 		break;
 	case 98:
-		return "Shen";
+		return (char *)"Shen";
 		break;
 	case 5:
-		return "Xin Zhao";
+		return (char *)"Xin Zhao";
 		break;
 	case 29:
-		return "Twitch";
+		return (char *)"Twitch";
 		break;
 	case 11:
-		return "Master Yi";
+		return (char *)"Master Yi";
 		break;
 	case 44:
-		return "Taric";
+		return (char *)"Taric";
 		break;
 	case 32:
-		return "Amumu";
+		return (char *)"Amumu";
 		break;
 	case 41:
-		return "Gangplank";
+		return (char *)"Gangplank";
 		break;
 	case 48:
-		return "Trundle";
+		return (char *)"Trundle";
 		break;
 	case 38:
-		return "Kassadin";
+		return (char *)"Kassadin";
 		break;
 	case 161:
-		return "Vel'Koz";
+		return (char *)"Vel'Koz";
 		break;
 	case 143:
-		return "Zyra";
+		return (char *)"Zyra";
 		break;
 	case 267:
-		return "Nami";
+		return (char *)"Nami";
 		break;
 	case 59:
-		return "Jarvan IV";
+		return (char *)"Jarvan IV";
 		break;
 	case 81:
-		return "Ezreal";
+		return (char *)"Ezreal";
 		break;
 	default:
-		return "No Champion Found";
+		return (char *)"No Champion Found";
 		break;
 	}
 }

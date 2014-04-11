@@ -4,64 +4,13 @@
 #include <windows.h>
 #include "cJSON/cJSON.h"
 #include "game.hpp"
-#include "constants.h"
+#include "static_data.h"
+#include "network.h"
 
-#define SINGLE_REQUEST_INTERVAL 1100
+#define SINGLE_REQUEST_INTERVAL 1000
 #define FULL_REQUEST_INTERVAL 10800000 // 3 hours * 60 minutes * 60 seconds * 1000 milliseconds
 
 std::set<game *, game_comparator > game_history;
-
-int find_team(int summoner_id)
-{
-	for (int i = 0; i < NUM_TEAMS; i++)
-		for (int j = 0; j < NUM_TEAM_MEMBERS; j++)
-			if (TEAMS[i][j] == summoner_id)
-				return i;
-	return -1;
-}
-
-struct MemoryStruct {
-	char *memory;
-	size_t size;
-	MemoryStruct(char *ptr = (char *)malloc(1), int size = 0) : memory(ptr), size(size) {} // not sure about this tho
-	~MemoryStruct()
-	{
-		if (memory != 0)
-			free(memory);
-	}
-	void reset()
-	{
-		free(memory);
-		memory = (char *)malloc(1);
-		size = 0;
-	}
-};
-
-/* http://curl.haxx.se/libcurl/c/curl_easy_setopt.html#CURLOPTWRITEFUNCTION */
-size_t write_func( char *ptr, size_t size, size_t nmemb, void *userdata)
-{
-	size_t realsize = size * nmemb;
-
-	struct MemoryStruct *mem = (struct MemoryStruct *)userdata;
-	mem->memory = (char *)realloc(mem->memory, mem->size + realsize + 1);
-
-	if (mem->memory == 0) {
-		/* out of memory */
-		printf("not enough memory (realloc returned NULL)\n");
-		return 0;
-	}
-
-	memcpy(&(mem->memory[mem->size]), ptr, realsize);
-	mem->size += realsize;
-	mem->memory[mem->size] = 0;
-
-	return realsize; // return bytes taken care of by func
-}
-
-void init()
-{
-
-}
 
 void save_to_file(const char *name)
 {
@@ -167,79 +116,56 @@ int main(int argc, char* argv[])
 	scanf("%s", key);
 
 	CURL *curl;
-	CURLcode res;
-
 	curl_global_init(CURL_GLOBAL_ALL);
 
-	char query[200];
-	MemoryStruct chunk;
+	while (true) {
+		curl = curl_easy_init();
+		for (int i = 0; i < NUM_TEAMS; ++i) {
+			for (int j = 0; j < NUM_TEAM_MEMBERS; ++j) {
+				/* get_games reuses the same handle by resetting the options and executing an updated query */
+				char *games = get_games(curl, TEAMS[i][j], key);
+				cJSON *json = cJSON_Parse(games);
+				free(games);
 
-	curl = curl_easy_init();
-	if (curl) {
-		/* Tell libcurl to *not* verify the peer. With libcurl you disable this with */
-		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+				if (!json) {
+					printf("Error before: [%s]\n",cJSON_GetErrorPtr());
+				} else {
+					cJSON *games_json = cJSON_GetObjectItem(json, "games");
 
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_func);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+					for (int k = 0; k < cJSON_GetArraySize(games_json); ++k) {
+						cJSON *game_json = cJSON_GetArrayItem(games_json, k);
 
-		while (true) { // Main loop, allows to make multiple requests in the background
-			for (int i = 0; i < NUM_TEAMS; ++i) {
-				for (int j = 0; j < NUM_TEAM_MEMBERS; ++j) {
-					sprintf(query, "https://prod.api.pvp.net/api/lol/eune/v1.3/game/by-summoner/%d/recent?api_key=%s", TEAMS[i][j], key);
-					curl_easy_setopt(curl, CURLOPT_URL, query);
+						game *gam = new game(game_json, TEAMS[i][j]);
+						/* We only need Summoner's Rift games with 10 players */
+						if (gam->map_id == 1 && gam->fellow_players_count == 9 &&
+								(!strcmp(gam->sub_type, "NONE") || !strcmp(gam->sub_type, "NORMAL") ||
+								!strcmp(gam->sub_type, "RANKED_SOLO_5x5") || !strcmp(gam->sub_type, "RANKED_TEAM_5x5"))) {
 
-					/* Perform the request, res will get the return code */
-					res = curl_easy_perform(curl);
-					/* Check for errors */
-					if (res != CURLE_OK)
-						fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-					else {
-						cJSON *json = cJSON_Parse(chunk.memory);
-
-						if (!json) {
-							printf("Error before: [%s]\n",cJSON_GetErrorPtr());
-						} else {
-							cJSON *games_json = cJSON_GetObjectItem(json, "games");
-
-							for (int k = 0; k < cJSON_GetArraySize(games_json); ++k) {
-								cJSON *game_json = cJSON_GetArrayItem(games_json, k); // game_json is a whole game entry
-
-								game *gam = new game(game_json, TEAMS[i][j]);
-
-								if (gam->map_id == 1 && gam->fellow_players_count == 9 && // We only need full SR games
-												(!strcmp(gam->sub_type, "NONE") || !strcmp(gam->sub_type, "NORMAL") ||
-												!strcmp(gam->sub_type, "RANKED_SOLO_5x5") || !strcmp(gam->sub_type, "RANKED_TEAM_5x5"))) {
-									game_history.insert(gam);
-
-									gam->print_short_description();
-								}
-							}
+							game_history.insert(gam);
+							gam->print_short_description();
 						}
-						cJSON_Delete(json);
-						chunk.reset();
 					}
-					Sleep(SINGLE_REQUEST_INTERVAL); // total requests: 80 (Rate Limit(s): 500 request(s) every 10 minute(s) / 10 request(s) every 10 second(s))
 				}
-			}
-			char output_file[20];
-			for (int i = 0; ; i++) {
-				sprintf(output_file, "output_%d.txt", i);
-				FILE *fp = fopen(output_file, "r+");
-				if (fp != 0)
-					continue; // we're looking for the next available file for creation
-				else {
-					fclose(fp);
-					break;
-				}
-			}
-			printf("Size of the set: %d\n", game_history.size());
-			save_to_file(output_file);
-			Sleep(FULL_REQUEST_INTERVAL); // interval between full fetch sessions
-		}
-		/* always cleanup */
-		curl_easy_cleanup(curl);
-	}
+				cJSON_Delete(json);
 
+				Sleep(SINGLE_REQUEST_INTERVAL); // total requests: 80 (Rate Limit(s): 500 request(s) every 10 minute(s) / 10 request(s) every 10 second(s))
+			}
+		}
+		curl_easy_cleanup(curl);
+		printf("Size of the set: %d\n", game_history.size());
+
+		char output_file[20];
+		for (int i = 0; ; i++) {
+			sprintf(output_file, "output_%d.txt", i);
+			FILE *fp = fopen(output_file, "r+");
+			if (fp == 0) { // we're looking for the next available file for creation
+				fclose(fp);
+				break;
+			}
+		}
+		save_to_file(output_file);
+		Sleep(FULL_REQUEST_INTERVAL); // interval between full fetch sessions
+	}
 	curl_global_cleanup();
 
 	return 0;
