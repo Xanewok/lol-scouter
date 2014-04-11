@@ -3,11 +3,11 @@
 #include <cstring>
 #include "cJSON/cJSON.h"
 #include "game.hpp"
+#include "static_data.h"
 
 /* Attemps to create a game object parsing the JSON string */
 game::game(cJSON *root, int summ_id)
 {
-	//desired = false;
 	summoner_id = summ_id;
 	stats = new raw_stats;
 
@@ -74,7 +74,7 @@ game::~game()
 
 void game::print_short_description()
 {
-	printf("(%I64d, %I64d)\ngame_id: %I64d\nPlaying as: %d\nSpells: %d %d\n%s\nKDA: %d / %d / %d\nwon: %s\n\n", game_id, summoner_id, game_id, champion_id, spell1, spell2, sub_type, stats->champions_killed, stats->num_deaths, stats->assists, stats->win?"true":"false");
+	printf("(%I64d, %I64d)\n%s\n%s\nPlayed as: %s\nSpells: %s %s\nKDA: %d / %d / %d\n\n", game_id, summoner_id, sub_type, stats->win?"Victory":"Loss", get_champion_name(champion_id), SUMMONER_SPELLS[spell1], SUMMONER_SPELLS[spell2], stats->champions_killed, stats->assists, stats->num_deaths);
 }
 
 bool game::operator<(const game &g) const

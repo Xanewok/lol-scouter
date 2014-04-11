@@ -6,14 +6,14 @@ OUT_PATH=./bin
 
 all: clean scouter interpreter
 
-scouter: cJSON.o game.o scouter.o static_data.o network.o
-	$(CC) $(CFLAGS) scouter.o cJSON.o game.o static_data.o network.o -o $(OUT_PATH)/scouter.exe $(LIBS) $(CLFLAGS)
+scouter: scouter.o cJSON.o team_game.o game.o static_data.o io.o network.o
+	$(CC) $(CFLAGS) scouter.o cJSON.o team_game.o game.o static_data.o io.o network.o -o $(OUT_PATH)/scouter.exe $(LIBS) $(CLFLAGS)
 
+interpreter: cJSON.o team_game.o game.o interpreter.o static_data.o io.o network.o
+	$(CC) $(CFLAGS) interpreter.o cJSON.o team_game.o game.o static_data.o io.o network.o -o $(OUT_PATH)/interpreter.exe $(LIBS) $(CLFLAGS)
+	
 scouter.o:
 	$(CC) $(CFLAGS) -c scouter.cpp
-
-interpreter: cJSON.o team_game.o game.o interpreter.o static_data.o
-	$(CC) $(CFLAGS) interpreter.o cJSON.o team_game.o game.o static_data.o -o $(OUT_PATH)/interpreter.exe
 
 interpreter.o:
 	$(CC) $(CFLAGS) -c interpreter.cpp
@@ -32,6 +32,9 @@ static_data.o:
 	
 network.o:
 	$(CC) $(CFLAGS) -c network.cpp
+
+io.o:
+	$(CC) $(CFLAGS) -c io.cpp
 	
 clean:
 	del *.o

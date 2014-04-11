@@ -17,7 +17,7 @@ const int TEAMS[NUM_TEAMS][NUM_TEAM_MEMBERS] = {{19381878, 19739336, 26154202, 2
 												{28190588, 23918752, 23982127, 27797169, 24094826}, /* Kule po dziurach */
 												{33863101, 28545674, 33863166, 34333251, 30972927},	/* Team Erasers */
 												{20539748, 20493466, 21803047, 26121772, 27824463}};/* Baited */
-												
+/* Maximum length of a summoner name is 16 characters long. */
 char const * SUMMONER_NAMES[NUM_TEAMS][NUM_TEAM_MEMBERS] = {{"Serphen", "Zecik", "sn4p1k", "eXcruZer", "MelamanDre"},	/* Random Five */
 														{"Vherax", "DaxiForever", "NoobzPwnr", "ListerTormentor", "xbiti"},	/* Purple Siege Minions */
 														{"fr3dziu", "NoName139", "malyfrankus", "5booze", "SchmetterlingPL"},	/* Nawiedzeni */

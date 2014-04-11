@@ -1,110 +1,18 @@
-#include "game.hpp"
-#include "static_data.h"
-#include <cstdio>
 #include <cstdlib>
-#include <cstring>
+#include <cstdio>
 #include <cassert>
+#include <cstring>
 #include <set>
-#include "team_game.hpp"
 #include "cJSON/cJSON.h"
+#include "io.hpp"
+#include "static_data.h"
+#include "game.hpp"
+#include "team_game.hpp"
 
 #define MIN_TEAMMATES_COUNT 4
 
 std::set<game *, game_comparator> game_history, player_ranked_game_history[NUM_TEAMS][NUM_TEAM_MEMBERS], player_normal_game_history[NUM_TEAMS][NUM_TEAM_MEMBERS];
 std::set<team_game *, team_game_comparator> team_game_history;
-
-void read_games_from_file(const char *name)
-{
-	FILE *fp;
-	char *buf = 0;
-	fp = fopen(name, "r");
-	if (fp != 0) {
-		fseek(fp, 0, SEEK_END);
-		long size = ftell(fp);
-		fseek(fp, 0, SEEK_SET);
-
-		buf = (char *)malloc(size);
-
-		if (buf == 0)
-			printf("mem error\n");
-
-		fread(buf, 1, size, fp);
-
-		fclose(fp);
-	} else
-		return; // don't do stuff when we can't access the input data
-
-	if (buf != 0) {
-		cJSON *json = cJSON_Parse(buf);
-		if (!json) {
-			printf("Error before: [%s]\n",cJSON_GetErrorPtr());
-		} else {
-			for (int i = 0; i < cJSON_GetArraySize(json); ++i) {
-				cJSON *game_json = cJSON_GetArrayItem(json, i); // game_json is a whole game entry
-
-				int summ_id = cJSON_GetObjectItem(game_json, "summonerId")->valuedouble;
-				game *gam = new game(game_json, summ_id);
-
-				game_history.insert(gam);
-				//gam->print_short_description();
-			}
-		}
-		cJSON_Delete(json);
-		free(buf);
-	}
-}
-
-void read_team_games_from_file(const char *name)
-{
-	FILE *fp;
-	char *buf = 0;
-	fp = fopen(name, "r");
-	if (fp != 0) {
-		fseek(fp, 0, SEEK_END);
-		long size = ftell(fp);
-		fseek(fp, 0, SEEK_SET);
-
-		buf = (char *)malloc(size);
-
-		if (buf == 0)
-			printf("mem error\n");
-
-		fread(buf, 1, size, fp);
-
-		fclose(fp);
-	} else
-		return; // don't do stuff when we can't access the input data
-
-	if (buf != 0) {
-		cJSON *json = cJSON_Parse(buf);
-		if (!json) {
-			printf("Error before: [%s]\n",cJSON_GetErrorPtr());
-		} else {
-			for (int i = 0; i < cJSON_GetArraySize(json); ++i) {
-				cJSON *game_json = cJSON_GetArrayItem(json, i); // game_json is a whole game entry
-
-				int summ_id = cJSON_GetObjectItem(game_json, "summonerId")->valuedouble;
-				int game_id = cJSON_GetObjectItem(game_json, "gameId")->valuedouble;
-
-				std::set<team_game *, team_game_comparator>::iterator it = team_game_history.find(new team_game(game_id));
-				if (it == team_game_history.end()) // Nie znaleziono
-					team_game_history.insert(new team_game(game_json, summ_id));
-				else {
-					for (int i = 1; i < (*it)->player_count; ++i) {
-						if ((*it)->player_perspectives[i]->summoner_id == summ_id) {
-							delete (*it)->player_perspectives[i];
-							(*it)->found_player_count++;
-							(*it)->player_perspectives[i] = new player_perspective(game_json, summ_id);
-							break;
-						}
-					}
-				}
-			}
-		}
-		cJSON_Delete(json);
-		free(buf);
-	}
-}
 
 bool read_game_history()
 {
@@ -123,20 +31,14 @@ bool read_game_history()
 		return false;
 	else {
 		sprintf(input_file, "output_%d.txt", idx-1);
-		read_games_from_file(input_file);
-		read_team_games_from_file(input_file);
+		read_games_from_file(game_history, input_file);
+		read_team_games_from_file(team_game_history, input_file);
 	}
 
 	return true;
 }
 
-int main()
-{
-	if (!read_game_history()) {
-		printf("There is no input file (output_<num>.txt).\n");
-		return -1; // Couldn't find the input, aborting
-	}
-
+void process_games() {
 	for (std::set<game *, game_comparator>::iterator it = game_history.begin(); it != game_history.end(); ++it) {
 		int bgt_team = find_team((*it)->summoner_id);
 
@@ -149,19 +51,33 @@ int main()
 			}
 		}
 	}
+}
 
-	int bgt_practice_count = 0;
+void process_teamgames(int &count) {
+	count = 0;
 	for (std::set<team_game *, team_game_comparator>::iterator it = team_game_history.begin(); it != team_game_history.end(); ++it) {
 		if ((*it)->found_player_count >= 4) {
-			bgt_practice_count++;
-			(*it)->print_short_description(); //- use that to see the overview of a game including personal stats for each person etc.
-			putchar('\n');
+			count++;
 		}
 	}
+}
+
+int main()
+{
+printf("test\n");
+	if (!read_game_history()) {
+		printf("There is no input file (output_<num>.txt).\n");
+		return -1; // Couldn't find the input, aborting
+	}
+printf("test\n");
+	int bgt_count;
+	process_games();
+	process_teamgames(bgt_count);
+
 
 	printf("size of the initial (non-unique) game history: %d\n", game_history.size());
 	printf("size of the team (unique) game history: %d\n", team_game_history.size());
-	printf("number of BGT games with %d+ members: %d\n", MIN_TEAMMATES_COUNT, bgt_practice_count);
+	printf("number of BGT games with %d+ members: %d\n", MIN_TEAMMATES_COUNT, bgt_count);
 	printf("sizes of teammates normal history:\n");
 	for (int i = 0; i < NUM_TEAMS; i++) {
 		for (int j = 0; j < NUM_TEAM_MEMBERS; j++) {

@@ -7,7 +7,7 @@
 #define SINGLE_REQUEST_INTERVAL 1100
 #define FULL_REQUEST_INTERVAL 10800000 // 3 hours * 60 minutes * 60 seconds * 1000 milliseconds
 
-MemoryStruct::MemoryStruct(char *ptr, int size) : memory(ptr), size(size) {} // not sure about this tho
+MemoryStruct::MemoryStruct(char *ptr, int size) : memory(ptr), size(size) {}
 MemoryStruct::~MemoryStruct()
 {
 	if (memory != 0)
@@ -87,6 +87,51 @@ char* get_games(int summoner_id, char *api_key)
 	CURL *curl = curl_easy_init();
 	if (curl)
 		out_str = get_games(curl, summoner_id, api_key);
+	curl_easy_cleanup(curl);
+
+	return out_str;
+}
+
+char* get_name(CURL *curl, int summoner_id, char *api_key)
+{
+	assert(curl != 0);
+
+	MemoryStruct chunk;
+	char query[200];
+	CURLcode res;
+
+	curl_easy_reset(curl);
+	if (curl) {
+		/* Set the connection options */
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, chunk.write_func);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+
+		sprintf(query, "https://prod.api.pvp.net/api/lol/eune/v1.4/summoner/%d/name?api_key=%s", summoner_id, api_key);
+		curl_easy_setopt(curl, CURLOPT_URL, query);
+
+		res = curl_easy_perform(curl);
+		/* Check for errors */
+		if (res != CURLE_OK)
+			fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+		else {
+			char *ret_str = (char *)malloc(chunk.size + 1);
+			strcpy(ret_str, chunk.memory);
+
+			return ret_str;
+		}
+	}
+
+	return 0;
+}
+
+char* get_name(int summoner_id, char *api_key)
+{
+	char *out_str = 0;
+
+	CURL *curl = curl_easy_init();
+	if (curl)
+		out_str = get_name(curl, summoner_id, api_key);
 	curl_easy_cleanup(curl);
 
 	return out_str;

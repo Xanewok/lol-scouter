@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <curl/curl.h>
 
 #ifndef NETWORK_H
 #define NETWORK_H
@@ -19,6 +20,8 @@ struct MemoryStruct {
 	(User needs to free() the returned pointer)
 	https://developer.riotgames.com/api/methods#!/618/1924
 */
-char* get_games(int summoner_id, char *api_key);
 char* get_games(CURL *curl, int summoner_id, char *api_key);
+char* get_games(int summoner_id, char *api_key);
+char* get_name(CURL *curl, int summoner_id, char *api_key);
+char* get_name(int summoner_id, char *api_key);
 #endif
