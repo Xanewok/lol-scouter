@@ -35,6 +35,9 @@ char const * SUMMONER_NAMES[NUM_TEAMS][NUM_TEAM_MEMBERS] = {{"Serphen", "Zecik",
 														{"HasanSalim", "paNiczdg", "Equivet", "ed0sno", "That D4ro"},	/* Team Erasers */
 														{"HadorX", "Tandraks", "Ksalk", "Meanderr", "Lifeless Reaver"}};/* Baited */
 
+char const * TEAM_NAMES[NUM_TEAMS] = {"Random Five", "Purple Siege Minions", "Nawiedzeni", "Kuba znowu w tyle", "Kurczak Tajland", "Slodkie Ziemniaczki Prime", "Nasos pls", "Bronzy na bocie", "Prawilna Piatka",
+										"Liniowo Niezalezni", "Kenson Squad", "Pan da RP-ki", "AGT", "Kule po dziurach", "Team Erasers", "Baited"};
+
 char const * SUMMONER_SPELLS[22] = {0, "Cleanse", "Clairvoyance", "Exhaust", "Flash", 0, "Ghost", "Heal", 0, 0, "Revive", "Smite", "Teleport", "Clarity", "Ignite", 0, 0, "Garrison", 0, 0, 0, "Barrier"};
 
 

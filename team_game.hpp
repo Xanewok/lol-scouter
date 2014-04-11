@@ -11,6 +11,7 @@ struct player_perspective {
 	player_perspective(int summoner_id, int champion_id, int team_id);
 	player_perspective();
 	player_perspective(cJSON *root, int summoner_id);
+	bool complete_info();
 };
 
 /* 	Modified Riot API game structure */
@@ -24,6 +25,7 @@ struct team_game {
 	team_game(int game_id);
 	~team_game();
 	void print_short_description();
+	void print_formatted_desc();
 	bool operator<(const team_game &g) const;
 };
 

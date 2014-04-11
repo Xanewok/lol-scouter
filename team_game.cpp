@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <ctime>
 #include "cJSON/cJSON.h"
 #include "team_game.hpp"
 #include "static_data.h"
@@ -47,6 +48,11 @@ player_perspective::player_perspective(cJSON *root, int summ_id)
 	win = cJSON_GetObjectItem(stats_json, "win")->type; // from cJSON.h: #define cJSON_False 0 #define cJSON_True 1
 }
 
+bool player_perspective::complete_info()
+{
+	return spell1 != -1;
+}
+
 team_game::team_game(cJSON *root, int summ_id)
 {
 	game_id = cJSON_GetObjectItem(root, "gameId")->valuedouble;
@@ -89,8 +95,6 @@ team_game::team_game(int game_id) : game_id(game_id) {}
 void team_game::print_short_description()
 {
 	printf("game_id: %I64d\nplayer_count: %d, time_played: ~%d minutes\n", game_id, player_count, player_perspectives[0]->time_played / 60);
-	//player_perspective *players[10] = player_perspectives;
-	//printf("BLUE TEAM: %s\n", player_perspectives[0]->team_id == 100 && player_perspectives[0]->win? "(Won)" : "");
 	
 	int count = 0;
 	for (int i = 0; i < player_count; ++i) {
@@ -112,25 +116,65 @@ void team_game::print_short_description()
 							SUMMONER_NAMES[find_team(player->summoner_id)][find_summoner(player->summoner_id)], get_champion_name(player->champion_id),SUMMONER_SPELLS[player->spell1], SUMMONER_SPELLS[player->spell2],
 							player->champions_killed, player->num_deaths, player->assists, player->minions_killed, player->neutral_minions_killed);
 				} else
-					printf("Summoner %I64d played %s\n", player->summoner_id, get_champion_name(player->champion_id));
+					if (find_team(player->summoner_id) != -1)
+							printf("%s played %s\n", SUMMONER_NAMES[find_team(player->summoner_id)][find_summoner(player->summoner_id)], get_champion_name(player->champion_id));
+					else
+						printf("Summoner %I64d played %s\n", player->summoner_id, get_champion_name(player->champion_id));
 
 				count = i >= 4? 5 : 0; // not 100% sure about 5 being here
 				break;
 			}
 		}
 	}
-	/*
-	for (int i = 0; i < player_count; i++) {
-		player_perspective *player = player_perspectives[i];
-		if (player->spell1 != -1) {
-			printf("Summoner %I64d played %d on team %d for roughly %d minutes and %s, KDA: %d/%d/%d CS: %d+%d (Summoner spells: %s %s)\n",
-					player->summoner_id, player->champion_id, player->team_id, player->time_played/60, player->win? "won" : "lost",
-					player->champions_killed, player->num_deaths, player->assists, player->minions_killed, player->neutral_minions_killed, SUMMONER_SPELLS[player->spell1], SUMMONER_SPELLS[player->spell2]);
-		} else {
-			printf("Summoner %I64d played %d on team %d\n", player->summoner_id, player->champion_id, player->team_id);
+}
+
+void team_game::print_formatted_desc()
+{
+	//printf("s");
+	player_perspective *first = player_perspectives[0];
+	char seconds[3] = {'0'};
+	if (first->time_played % 60 < 10)
+		seconds[1] = (first->time_played % 60) + '0';
+	else
+		sprintf(seconds, "%d", first->time_played % 60);
+	time_t game_date = create_date/1000;
+	tm *data_str = localtime(&game_date);
+	printf("%s%s\n(%s) %d:%s\n", asctime(data_str), TEAM_NAMES[find_team(first->summoner_id)], first->win? "Victory" : "Loss", first->time_played / 60, seconds);
+	delete data_str;
+	
+	int cnt = 0;
+	printf("%s side\n", first->team_id == 100? "Blue" : "Purple");
+	for (int i = 0; i < player_count; ++i) {
+		if (i == 5) putchar('\n');
+
+		for (int j = 0; j < player_count; ++j) {
+			player_perspective *jth_player = player_perspectives[j];
+			
+			if ((i < 5 && jth_player->team_id == first->team_id) || (i >= 5 && jth_player->team_id != first->team_id))
+				cnt++;
+			
+			if (cnt == i + 1) {
+				char *tab = (char *)"\t", *dbl_tab = (char *)"\t\t";
+				if (jth_player->complete_info()) {
+					printf("%s%s%s%s[%c %c] %d/%d/%d\t%d+%d\n",
+							SUMMONER_NAMES[find_team(jth_player->summoner_id)][find_summoner(jth_player->summoner_id)],
+							strlen(SUMMONER_NAMES[find_team(jth_player->summoner_id)][find_summoner(jth_player->summoner_id)]) < 8? dbl_tab : tab,
+							get_champion_name(jth_player->champion_id), 
+							strlen(get_champion_name(jth_player->champion_id)) < 8? dbl_tab : tab,SUMMONER_SPELLS[jth_player->spell1][0], SUMMONER_SPELLS[jth_player->spell2][0],
+							jth_player->champions_killed, jth_player->num_deaths, jth_player->assists, jth_player->minions_killed, jth_player->neutral_minions_killed);
+				} else {
+					if (find_team(jth_player->summoner_id) != -1) {
+						printf("%s%s%s\n", SUMMONER_NAMES[find_team(jth_player->summoner_id)][find_summoner(jth_player->summoner_id)],
+						strlen(SUMMONER_NAMES[find_team(jth_player->summoner_id)][find_summoner(jth_player->summoner_id)]) < 8? dbl_tab : tab, get_champion_name(jth_player->champion_id));
+					} else
+						printf("Summ. %I64d\t%s\n", jth_player->summoner_id, get_champion_name(jth_player->champion_id));
+				}
+				cnt = (i >= 4)? 5 : 0;
+
+				break;
+			}
 		}
 	}
-	*/
 }
 
 bool team_game::operator<(const team_game &g) const
