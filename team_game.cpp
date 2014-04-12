@@ -154,18 +154,26 @@ void team_game::print_formatted_desc()
 				cnt++;
 			
 			if (cnt == i + 1) {
+				int nick_len = strlen(SUMMONER_NAMES[find_team(jth_player->summoner_id)][find_summoner(jth_player->summoner_id)]);
+				char *indent;
+				if (nick_len < 8)
+					indent = (char *)"\t\t\t";
+				else if (nick_len < 15)
+					indent = (char *)"\t\t";
+				else
+					indent = (char *)"\t";
 				char *tab = (char *)"\t", *dbl_tab = (char *)"\t\t";
 				if (jth_player->complete_info()) {
 					printf("%s%s%s%s[%c %c] %d/%d/%d\t%d+%d\n",
 							SUMMONER_NAMES[find_team(jth_player->summoner_id)][find_summoner(jth_player->summoner_id)],
-							strlen(SUMMONER_NAMES[find_team(jth_player->summoner_id)][find_summoner(jth_player->summoner_id)]) < 8? dbl_tab : tab,
+							indent,
 							get_champion_name(jth_player->champion_id), 
 							strlen(get_champion_name(jth_player->champion_id)) < 8? dbl_tab : tab,SUMMONER_SPELLS[jth_player->spell1][0], SUMMONER_SPELLS[jth_player->spell2][0],
 							jth_player->champions_killed, jth_player->num_deaths, jth_player->assists, jth_player->minions_killed, jth_player->neutral_minions_killed);
 				} else {
 					if (find_team(jth_player->summoner_id) != -1) {
 						printf("%s%s%s\n", SUMMONER_NAMES[find_team(jth_player->summoner_id)][find_summoner(jth_player->summoner_id)],
-						strlen(SUMMONER_NAMES[find_team(jth_player->summoner_id)][find_summoner(jth_player->summoner_id)]) < 8? dbl_tab : tab, get_champion_name(jth_player->champion_id));
+						indent, get_champion_name(jth_player->champion_id));
 					} else
 						printf("Summ. %I64d\t%s\n", jth_player->summoner_id, get_champion_name(jth_player->champion_id));
 				}

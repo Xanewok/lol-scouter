@@ -132,6 +132,29 @@ bool read_game_history()
 	return true;
 }
 
+bool read_full_game_history()
+{
+	int idx;
+	char input_file[20];
+	
+	idx = 0;
+	for (; ; ++idx) {
+		sprintf(input_file, "output_%d.txt", idx);
+		FILE *fp = fopen(input_file, "r");
+		if (fp == 0)
+			break;
+		else {
+			read_games_from_file(game_history, input_file);
+			read_team_games_from_file(team_game_history, input_file);
+		}
+	}
+
+	if (idx == 0)
+		return false;
+
+	return true;
+}
+
 void process_games() {
 	for (std::set<game *, game_comparator>::iterator it = game_history.begin(); it != game_history.end(); ++it) {
 		int team = find_team((*it)->summoner_id);
@@ -147,7 +170,7 @@ void process_games() {
 				if (vec_it == player_normal_stats[team][summ].end()) 
 					player_normal_stats[team][summ].push_back(obj);
 				else {
-					printf("test");
+					//printf("normal\n");
 					vec_it->update_stats(*it);
 				}
 					
@@ -158,7 +181,7 @@ void process_games() {
 				if (vec_it == player_ranked_stats[team][summ].end()) 
 					player_ranked_stats[team][summ].push_back(obj);
 				else {
-					printf("test");
+					//printf("ranked\n");
 					vec_it->update_stats(*it);
 				}
 			}
@@ -169,7 +192,6 @@ void process_games() {
 void process_teamgames(int &game_cnt) {
 	game_cnt = 0;
 	for (std::set<team_game *, team_game_comparator>::iterator it = team_game_history.begin(); it != team_game_history.end(); ++it) {
-		//int team = (*it)->player_perspectives[0]->team_id;
 		int summ_cnt = 0;
 		for (int i = 0; i < (*it)->player_count; ++i)
 			if (find_summoner((*it)->player_perspectives[i]->summoner_id) != -1)
@@ -178,20 +200,20 @@ void process_teamgames(int &game_cnt) {
 		if (summ_cnt >= MIN_TEAMMATES_COUNT) {
 			bgt_team_games[find_team((*it)->player_perspectives[0]->summoner_id)].insert((*it));
 			game_cnt++;
-			(*it)->print_formatted_desc();
-			putchar('\n');
+			//(*it)->print_formatted_desc();
+			//putchar('\n');
 		}
 	}
 }
 
 int main()
 {
-	if (!read_game_history()) {
+	if (!read_full_game_history()) {
 		printf("There is no input file (output_<num>.txt).\n");
 		return -1; // Couldn't find the input, aborting
 	}
 
-	int bgt_count;
+	int bgt_count, game_cnt;
 	process_games();
 	process_teamgames(bgt_count);
 
@@ -200,19 +222,32 @@ int main()
 	printf("size of the team (unique) game history: %d\n", team_game_history.size());
 	printf("number of BGT games with %d+ members: %d\n", MIN_TEAMMATES_COUNT, bgt_count);
 	printf("sizes of teammates normal history:\n");
+	bgt_count = 0; game_cnt = 0;
 	for (int i = 0; i < NUM_TEAMS; i++) {
 		for (int j = 0; j < NUM_TEAM_MEMBERS; j++) {
-			printf("%d\t", player_normal_stats[i][j].size());
+			for (unsigned int k = 0; k < player_normal_stats[i][j].size(); k++) {
+				bgt_count += player_normal_stats[i][j][k].w + player_normal_stats[i][j][k].l;
+				game_cnt += player_normal_stats[i][j][k].w + player_normal_stats[i][j][k].l;
+			}
+			printf("%d\t", game_cnt);
+			game_cnt = 0;
 		}
-		putchar('\n');
+		printf("\t%s\n", TEAM_NAMES[i]);
 	}
+	game_cnt = 0;
 	printf("sizes of teammates ranked history:\n");
 	for (int i = 0; i < NUM_TEAMS; i++) {
 		for (int j = 0; j < NUM_TEAM_MEMBERS; j++) {
-			printf("%d\t", player_ranked_stats[i][j].size());
+			for (unsigned int k = 0; k < player_ranked_stats[i][j].size(); k++) {
+				bgt_count += player_ranked_stats[i][j][k].w + player_ranked_stats[i][j][k].l;
+				game_cnt += player_ranked_stats[i][j][k].w + player_ranked_stats[i][j][k].l;
+			}
+			printf("%d\t", game_cnt);
+			game_cnt = 0;
 		}
-		putchar('\n');
+		printf("\t%s\n", TEAM_NAMES[i]);
 	}
+	printf("bgt_count (suma wszystkich) %d\n", bgt_count);
 	
 	while (true) {
 		printf("Which team's history would you like to browse?\n>");
