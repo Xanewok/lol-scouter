@@ -1,5 +1,8 @@
-README
-
 League of Legends Team/Player scouting utility
 
-//TODO:
+Old project which served as a utility and allowed to prepare better for a tourney knowing possible roster for given abstract teams.
+Uses (old) Riot JSON API via curl.
+It tried to detect match a team from individual players' history and to provide some meaningful statistics (most common team composition etc.)
+Since the code was created shortly before and exclusively for the tourney and since I came back to C++ after a while, code quality is really bad.
+But it served its purpose :)
+Leaving it online so someone can have a very basic idea how to use the technology to consume Riot API (at least at that time).
